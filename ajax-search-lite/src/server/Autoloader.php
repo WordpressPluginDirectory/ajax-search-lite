@@ -1,21 +1,27 @@
 <?php
 namespace WPDRMS\ASL;
 
+if ( !defined('ABSPATH') ) {
+	die("You can't access this file directly.");
+}
+
 class Autoloader {
 	protected static $_instance;
 
 	protected $aliases = array(
+		'ASL_Query' => 'WPDRMS\ASL\Search\SearchQuery',
 	);
 
 	private function __construct() {
-		defined('ABSPATH') or die();
-
-		spl_autoload_register(array(
-			$this, 'loader'
-		));
+		spl_autoload_register(
+			array(
+				$this,
+				'loader',
+			)
+		);
 	}
 
-	function loader( $class ) {
+	public function loader( $class ) {
 
 		// project-specific namespace prefix
 		$prefix = 'WPDRMS\\ASL\\';
@@ -28,16 +34,16 @@ class Autoloader {
 
 		if ( strncmp($prefix, $class, $len) !== 0 ) {
 			// is this an alias?
-			if ( isset($this->aliases[$class]) ) {
-				if ( !class_exists($this->aliases[$class]) ) {
-					$this->loader($this->aliases[$class]);
+			if ( isset($this->aliases[ $class ]) ) {
+				if ( !class_exists($this->aliases[ $class ]) ) {
+					$this->loader($this->aliases[ $class ]);
 				}
 
-				if ( class_exists($this->aliases[$class]) ) {
+				if ( class_exists($this->aliases[ $class ]) ) {
 					/**
 					 * Create class alias for old class names
 					 */
-					class_alias($this->aliases[$class], $class);
+					class_alias($this->aliases[ $class ], $class);
 				}
 			}
 		} else {
@@ -57,7 +63,7 @@ class Autoloader {
 	}
 
 	// ------------------------------------------------------------
-	//   ---------------- SINGLETON SPECIFIC --------------------
+	// ---------------- SINGLETON SPECIFIC --------------------
 	// ------------------------------------------------------------
 	public static function getInstance() {
 		if ( ! ( self::$_instance instanceof self ) ) {

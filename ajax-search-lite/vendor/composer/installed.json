@@ -1,5 +1,123 @@
 {
-    "packages": [],
+    "packages": [
+        {
+            "name": "wpdreams/admin-ui",
+            "version": "v0.0.20",
+            "version_normalized": "0.0.20.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:wpdreams/admin-ui.git",
+                "reference": "985d291ff92e5c002e349f0935dbc948cb062de4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wpdreams/admin-ui/zipball/985d291ff92e5c002e349f0935dbc948cb062de4",
+                "reference": "985d291ff92e5c002e349f0935dbc948cb062de4",
+                "shasum": ""
+            },
+            "require": {
+                "wpdreams/plugin-core": "*"
+            },
+            "require-dev": {
+                "doctrine/instantiator": "^1.5",
+                "mockery/mockery": "^1.6",
+                "php-mock/php-mock": "^2.5",
+                "php-mock/php-mock-phpunit": "^2.10",
+                "phpstan/phpstan": "2.*",
+                "phpunit/phpunit": "9.*",
+                "squizlabs/php_codesniffer": "*",
+                "wp-cli/wp-cli-bundle": "*",
+                "wp-coding-standards/wpcs": "*",
+                "yoast/phpunit-polyfills": "*",
+                "zircote/swagger-php": "*"
+            },
+            "time": "2026-05-25T07:56:52+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "WPDRMS\\AdminUI\\": "src/"
+                }
+            },
+            "install-path": "../wpdreams/admin-ui"
+        },
+        {
+            "name": "wpdreams/php-utils",
+            "version": "v0.0.10",
+            "version_normalized": "0.0.10.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:wpdreams/php-utils.git",
+                "reference": "24035e89737932255faee66c90ac85a147c7d1ee"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wpdreams/php-utils/zipball/24035e89737932255faee66c90ac85a147c7d1ee",
+                "reference": "24035e89737932255faee66c90ac85a147c7d1ee",
+                "shasum": ""
+            },
+            "require-dev": {
+                "doctrine/instantiator": "^1.5",
+                "mockery/mockery": "^1.6",
+                "php-mock/php-mock": "^2.5",
+                "php-mock/php-mock-phpunit": "^2.10",
+                "phpstan/phpstan": "2.*",
+                "phpunit/phpunit": "9.*",
+                "squizlabs/php_codesniffer": "*",
+                "wp-cli/wp-cli-bundle": "*",
+                "wp-coding-standards/wpcs": "*",
+                "yoast/phpunit-polyfills": "*",
+                "zircote/swagger-php": "*"
+            },
+            "time": "2026-05-16T15:38:56+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "WPDRMS\\Utils\\": "src/"
+                }
+            },
+            "install-path": "../wpdreams/php-utils"
+        },
+        {
+            "name": "wpdreams/plugin-core",
+            "version": "v0.0.8",
+            "version_normalized": "0.0.8.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:wpdreams/plugin-core.git",
+                "reference": "7d4fbbcfb69d737dfd1e4b6fd617e6b470f33560"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wpdreams/plugin-core/zipball/7d4fbbcfb69d737dfd1e4b6fd617e6b470f33560",
+                "reference": "7d4fbbcfb69d737dfd1e4b6fd617e6b470f33560",
+                "shasum": ""
+            },
+            "require-dev": {
+                "doctrine/instantiator": "^1.5",
+                "mockery/mockery": "^1.6",
+                "php-mock/php-mock": "^2.5",
+                "php-mock/php-mock-phpunit": "^2.10",
+                "phpstan/phpstan": "2.*",
+                "phpunit/phpunit": "9.*",
+                "squizlabs/php_codesniffer": "*",
+                "wp-cli/wp-cli-bundle": "*",
+                "wp-coding-standards/wpcs": "*",
+                "yoast/phpunit-polyfills": "*",
+                "zircote/swagger-php": "*"
+            },
+            "time": "2026-05-17T20:03:17+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "WPDRMS\\PluginCore\\": "src/"
+                }
+            },
+            "install-path": "../wpdreams/plugin-core"
+        }
+    ],
     "dev": false,
     "dev-package-names": []
 }

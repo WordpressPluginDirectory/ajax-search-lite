@@ -3,9 +3,10 @@
 namespace WPDRMS\ASL\Utils\AdvancedField\Types;
 
 use stdClass;
-use WPDRMS\ASL\Utils\Post;
-use WPDRMS\ASL\Utils\Str;
-use WPDRMS\ASL\Utils\User;
+use WPDRMS\ASL\Compatibility\ORM\CompatibilityOptions;
+use WPDRMS\Utils\Post;
+use WPDRMS\Utils\Str;
+use WPDRMS\Utils\User;
 
 /**
  * Handles special and built in advanced field types related to results fields
@@ -22,7 +23,7 @@ class LegacyPostMetaFieldTypes implements AdvancedFieldTypeInterface {
 	protected ?stdClass $result;
 
 	public function __construct( string $field, array $field_args, ?stdClass $result ) {
-		$this->use_acf    = wd_asl()->o['asl_compatibility']['use_acf_getfield'];
+		$this->use_acf    = CompatibilityOptions::instance()->use_acf_getfield->value;
 		$this->field      = $field;
 		$this->result     = $result;
 		$this->field_args = $field_args;

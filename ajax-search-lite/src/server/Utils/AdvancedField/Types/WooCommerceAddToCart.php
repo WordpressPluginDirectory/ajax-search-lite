@@ -3,7 +3,7 @@
 namespace WPDRMS\ASL\Utils\AdvancedField\Types;
 
 use stdClass;
-use WPDRMS\ASL\Utils\Html;
+use WPDRMS\Utils\Html;
 
 class WooCommerceAddToCart extends AbstractWooCommerceBase implements AdvancedFieldTypeInterface {
 	private string $text_color;
@@ -50,7 +50,7 @@ class WooCommerceAddToCart extends AbstractWooCommerceBase implements AdvancedFi
 		$display_quantity = $this->display_quantity && !$is_variable;
 		$link             = !$is_variable ? get_permalink(wc_get_page_id('shop')) : $this->product->get_permalink();
 		$ajax             = !$is_variable ? ' ajax-add-to-cart' : '';
-		$text             = !$is_variable ? __('Add to cart', 'woocommerce') : __('Choose variation', 'woocommerce');
+		$text             = !$is_variable ? __('Add to cart', 'ajax-search-lite') : __('Choose variation', 'ajax-search-lite');
 		ob_start();
 		?>
 		<div class="add-to-cart-container" style="justify-content: <?php echo esc_attr($this->justification); ?>">

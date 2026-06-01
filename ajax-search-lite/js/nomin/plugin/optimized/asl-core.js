@@ -41,6 +41,7 @@ var external_global_namespaceObject = Object(window.WPD)["global"];
 ;// external "utils"
 var external_utils_namespaceObject = Object(window.WPD)["utils"];
 ;// ./src/client/plugin/core/actions/filters.ts
+/* unused harmony import specifier */ var AslPlugin;
 
 
 
@@ -67,140 +68,268 @@ external_global_namespaceObject.AslPlugin.prototype.setFilterStateInput = functi
 /* harmony default export */ var filters = ((/* unused pure expression or super */ null && (AslPlugin)));
 
 ;// ./src/client/plugin/core/actions/ga_events.ts
+/* unused harmony import specifier */ var ga_events_AslPlugin;
 
 
 "use strict";
 const ASL = window.ASL;
-external_global_namespaceObject.AslPlugin.prototype.gaPageview = function(term) {
+external_global_namespaceObject.AslPlugin.prototype.gaEvent = function(which, d) {
   let $this = this;
+  if (typeof ASL.analytics == "undefined" || !ASL.analytics.method)
+    return;
+  let _gtag = typeof window.gtag == "function" ? window.gtag : false;
+  if (_gtag === false && typeof window.dataLayer == "undefined")
+    return;
   let tracking_id = $this.gaGetTrackingID();
-  if (typeof ASL.analytics == "undefined" || ASL.analytics.method != "pageview")
-    return false;
-  if (ASL.analytics.string != "") {
-    let _ga = typeof window.__gaTracker == "function" ? window.__gaTracker : typeof window.ga == "function" ? window.ga : false;
-    let _gtag = typeof window.gtag == "function" ? window.gtag : false;
-    let url = $this.o.homeurl.replace(window.location.origin, "");
+  let def_data = {
+    "search_id": $this.o.id,
+    "search_name": $this.o.name,
+    "phrase": $this.n("text").val(),
+    "option_label": "",
+    "option_value": "",
+    "result_title": "",
+    "result_url": "",
+    "results_count": ""
+  };
+  const mergedData = { ...def_data, ...d };
+  const items = ASL.analytics.event[which]?.items ?? [];
+  for (const ev of items) {
+    if (!ev.active) continue;
+    const eventParams = { "send_to": "" };
+    for (const p of ev.params ?? []) {
+      if (!p.key) continue;
+      let val = p.value;
+      Object.keys(mergedData).forEach(function(k) {
+        const v = String(mergedData[k]).replace(/[\s\n\r]+/g, " ").trim();
+        val = val.replace(new RegExp("\\{" + k + "\\}", "gmi"), v);
+      });
+      eventParams[p.key] = val;
+    }
     if (_gtag !== false) {
       if (tracking_id !== false) {
         tracking_id.forEach(function(id) {
-          _gtag("config", id, { "page_path": url + ASL.analytics.string.replace("{asl_term}", term) });
-        });
-      }
-    } else if (_ga !== false) {
-      let params = {
-        "page": url + ASL.analytics.string.replace("{asl_term}", term),
-        "title": "Ajax Search"
-      };
-      if (tracking_id !== false) {
-        tracking_id.forEach(function(id) {
-          _ga("create", id, "auto");
-          _ga("send", "pageview", params);
+          eventParams.send_to = id;
+          _gtag("event", ev.action, eventParams);
         });
       } else {
-        _ga("send", "pageview", params);
-      }
-    }
-  }
-};
-external_global_namespaceObject.AslPlugin.prototype.gaEvent = function(which, d) {
-  let $this = this;
-  let tracking_id = $this.gaGetTrackingID();
-  if (typeof ASL.analytics == "undefined" || ASL.analytics.method != "event")
-    return false;
-  let _gtag = typeof window.gtag == "function" ? window.gtag : false;
-  let _ga = typeof window.__gaTracker == "function" ? window.__gaTracker : typeof window.ga == "function" ? window.ga : false;
-  if (_gtag === false && _ga === false && typeof window.dataLayer == "undefined")
-    return false;
-  if (typeof ASL.analytics.event[which] != "undefined" && ASL.analytics.event[which].active) {
-    let def_data = {
-      "search_id": $this.o.id,
-      "search_name": $this.o.name,
-      "phrase": $this.n("text").val(),
-      "option_name": "",
-      "option_value": "",
-      "result_title": "",
-      "result_url": "",
-      "results_count": ""
-    };
-    let event = {
-      "event_category": ASL.analytics.event[which].category,
-      "event_label": ASL.analytics.event[which].label,
-      "value": ASL.analytics.event[which].value,
-      "send_to": ""
-    };
-    const data = { ...def_data, ...d };
-    Object.keys(data).forEach(function(k) {
-      let v = data[k];
-      v = String(v).replace(/[\s\n\r]+/g, " ").trim();
-      Object.keys(event).forEach(function(kk) {
-        let regex = new RegExp("{" + k + "}", "gmi");
-        event[kk] = event[kk].replace(regex, v);
-      });
-    });
-    if (_ga !== false) {
-      if (tracking_id !== false) {
-        tracking_id.forEach(function(id) {
-          _ga("create", id, "auto");
-          _ga(
-            "send",
-            "event",
-            event.event_category,
-            ASL.analytics.event[which].action,
-            event.event_label,
-            event.value
-          );
-        });
-      } else {
-        _ga(
-          "send",
-          "event",
-          event.event_category,
-          ASL.analytics.event[which].action,
-          event.event_label,
-          event.value
-        );
-      }
-    } else if (_gtag !== false) {
-      if (tracking_id !== false) {
-        tracking_id.forEach(function(id) {
-          event.send_to = id;
-          _gtag("event", ASL.analytics.event[which].action, event);
-        });
-      } else {
-        _gtag("event", ASL.analytics.event[which].action, event);
+        delete eventParams.send_to;
+        _gtag("event", ev.action, eventParams);
       }
     } else if (window?.dataLayer?.push !== void 0) {
       window.dataLayer.push({
         "event": "gaEvent",
-        "eventCategory": event.event_category,
-        "eventAction": ASL.analytics.event[which].action,
-        "eventLabel": event.event_label
+        "eventAction": ev.action,
+        ...eventParams
       });
     }
   }
 };
 external_global_namespaceObject.AslPlugin.prototype.gaGetTrackingID = function() {
-  let ret = false;
   if (typeof ASL.analytics == "undefined") {
-    return ret;
+    return false;
   }
-  if (typeof ASL.analytics.tracking_id != "undefined" && ASL.analytics.tracking_id != "") {
+  if (ASL.analytics.tracking_id) {
     return [ASL.analytics.tracking_id];
-  } else {
-    let _gtag = typeof window.gtag == "function" ? window.gtag : false;
-    if (_gtag === false && typeof window.ga != "undefined" && typeof window.ga.getAll != "undefined") {
-      let id = [];
-      window.ga.getAll().forEach(function(tracker) {
-        id.push(tracker.get("trackingId"));
+  }
+  return false;
+};
+/* harmony default export */ var ga_events = ((/* unused pure expression or super */ null && (ga_events_AslPlugin)));
+
+;// external "DoMini"
+var external_DoMini_namespaceObject = Object(window.WPD)["DoMini"];
+var external_DoMini_default = /*#__PURE__*/__webpack_require__.n(external_DoMini_namespaceObject);
+;// ./src/client/plugin/core/actions/live.ts
+/* unused harmony import specifier */ var live_AslPlugin;
+
+
+
+
+
+
+
+const live_ASL = window.ASL;
+external_global_namespaceObject.AslPlugin.prototype.getLiveLoadAltSelectors = function() {
+  return [
+    ".search-content",
+    "#content #posts-container",
+    "#content",
+    "#Content",
+    "div[role=main]",
+    "main[role=main]",
+    "div.theme-content",
+    "div.td-ss-main-content",
+    "main#page-content",
+    "main.l-content",
+    "#primary",
+    "#main-content",
+    ".main-content",
+    ".search section .bde-post-loop",
+    // breakdance posts loop section search archive
+    ".archive section .bde-post-loop",
+    // breakdance posts loop section general archive
+    ".search section .bde-post-list",
+    // breakdance posts list section search archive
+    ".archive section .bde-post-list",
+    // breakdance posts list section general archive
+    "main .wp-block-query",
+    // block themes
+    "main"
+    // fallback
+  ];
+};
+external_global_namespaceObject.AslPlugin.prototype.usingLiveLoader = function() {
+  const $this = this;
+  if ($this._usingLiveLoader !== void 0) return $this._usingLiveLoader;
+  const o = $this.o;
+  const idClass = "asp_es_" + o.id;
+  const altSelectors = this.getLiveLoadAltSelectors().join(",");
+  if (document.getElementsByClassName(idClass).length) {
+    return $this._usingLiveLoader = true;
+  }
+  const options = ["resPage"];
+  $this._usingLiveLoader = options.some((key) => {
+    const opt = o[key];
+    return opt.useAjax && (document.querySelector(opt.selector) || altSelectors && document.querySelector(altSelectors));
+  });
+  return $this._usingLiveLoader;
+};
+external_global_namespaceObject.AslPlugin.prototype.liveLoad = function(selector, url, updateLocation, forceAjax) {
+  if (selector == "body" || selector == "html") {
+    console.log("Ajax Search Pro: Do not use html or body as the live loader selector.");
+    return false;
+  }
+  if (live_ASL.pageHTML == "") {
+    if (!live_ASL._ajax_page_html) {
+      live_ASL._ajax_page_html = true;
+      external_DoMini_default().fn.ajax({
+        url: location.href,
+        method: "GET",
+        success: function(data) {
+          live_ASL.pageHTML = data;
+        },
+        // @ts-ignore
+        dataType: "html"
       });
-      return id.length > 0 ? id : false;
     }
   }
-  return ret;
+  function process(data) {
+    data = external_utils_namespaceObject.Hooks.applyFilters("asl/live_load/raw_data", data, $this);
+    let parser = new DOMParser();
+    let dataNode = parser.parseFromString(data, "text/html");
+    let $dataNode = external_DoMini_default()(dataNode);
+    if (data != "" && $dataNode.length > 0 && $dataNode.find(selector).length > 0) {
+      data = data.replace(/&asl_force_reset_pagination=1/gmi, "");
+      data = data.replace(/%26asl_force_reset_pagination%3D1/gmi, "");
+      data = data.replace(/&#038;asl_force_reset_pagination=1/gmi, "");
+      if ((0,external_utils_namespaceObject.isSafari)()) {
+        data = data.replace(/srcset/gmi, "nosrcset");
+      }
+      data = external_utils_namespaceObject.Hooks.applyFilters("asl/live_load/html", data, $this.o.id, $this.o.iid);
+      $dataNode = external_DoMini_default()(parser.parseFromString(data, "text/html"));
+      let replacementNode = $dataNode.find(selector).get(0);
+      replacementNode = external_utils_namespaceObject.Hooks.applyFilters("asl/live_load/replacement_node", replacementNode, $this, $el.get(0), data);
+      if (replacementNode != null) {
+        const node = $el.get(0);
+        if (node !== void 0) {
+          $el.get(0)?.parentNode?.replaceChild(replacementNode, node);
+        }
+      }
+      $el = external_DoMini_default()(selector).first();
+      if (updateLocation) {
+        document.title = dataNode.title;
+        history.pushState({}, "", url);
+      }
+      external_DoMini_default()(selector).first().find(".woocommerce-ordering").on("change", "select.orderby", function() {
+        external_DoMini_default()(this).closest("form").trigger("submit");
+      });
+      $this.addHighlightString(external_DoMini_default()(selector).find("a"));
+      external_utils_namespaceObject.Hooks.applyFilters("asl/live_load/finished", url, $this, selector, $el.get(0));
+      live_ASL.initialize();
+      $this.lastSuccesfulSearch = $this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim();
+      $this.lastSearchData = data;
+    }
+    $this.n("s").trigger("asl_search_end", [$this.o.id, $this.o.iid, $this.n("text").val(), data], true, true);
+    $this.gaEvent?.("search_end", { "results_count": "unknown" });
+    $this.hideLoader();
+    $el.css("opacity", 1);
+    $this.searching = false;
+    if ($this.n("text").val() != "") {
+      $this.n("proclose").css({
+        display: "block"
+      });
+    }
+  }
+  updateLocation = typeof updateLocation == "undefined" ? this.o.trigger.update_href : updateLocation;
+  forceAjax = typeof forceAjax == "undefined" ? false : forceAjax;
+  let altSel = this.getLiveLoadAltSelectors();
+  if (selector != "#main")
+    altSel.unshift("#main");
+  if (external_DoMini_default()(selector).length < 1) {
+    altSel.forEach(function(s) {
+      if (external_DoMini_default()(s).length > 0) {
+        selector = s;
+        return false;
+      }
+    });
+    if (external_DoMini_default()(selector).length < 1) {
+      console.log("Ajax Search Lite: The live search selector does not exist on the page.");
+      return false;
+    }
+  }
+  selector = external_utils_namespaceObject.Hooks.applyFilters("asl/live_load/selector", selector, this);
+  let $el = external_DoMini_default()(selector).first(), $this = this;
+  $this.searchAbort();
+  $el.css("opacity", 0.4);
+  external_utils_namespaceObject.Hooks.applyFilters("asl/live_load/start", url, $this, selector, $el.get(0));
+  if (!forceAjax && $this.n("searchsettings").find("input[name=filters_initial]").val() == 1 && $this.n("text").val() == "") {
+    (0,external_utils_namespaceObject.intervalUntilExecute)(function() {
+      process(live_ASL.pageHTML);
+    }, function() {
+      return live_ASL.pageHTML != "";
+    });
+  } else {
+    $this.searching = true;
+    $this.post = external_DoMini_default().fn.ajax({
+      url,
+      method: "GET",
+      success: function(data) {
+        process(data);
+      },
+      // @ts-ignore
+      dataType: "html",
+      fail: function(jqXHR) {
+        $el.css("opacity", 1);
+        if (jqXHR.status === 0 && jqXHR.readyState === jqXHR.UNSENT) {
+          return;
+        }
+        $el.html("This request has failed. Please check your connection.");
+        $this.hideLoader();
+        $this.searching = false;
+        $this.n("proclose").css({
+          display: "block"
+        });
+      }
+    });
+  }
 };
-/* harmony default export */ var ga_events = ((/* unused pure expression or super */ null && (AslPlugin)));
+external_global_namespaceObject.AslPlugin.prototype.getCurrentLiveURL = function() {
+  let $this = this;
+  let url = "asl_ls=" + (0,external_utils_namespaceObject.nicePhrase)($this.n("text").val()), start = "&", location2 = window.location.href;
+  location2 = location2.indexOf("asl_ls=") > -1 ? location2.slice(0, location2.indexOf("asl_ls=")) : location2;
+  location2 = location2.indexOf("asl_ls&") > -1 ? location2.slice(0, location2.indexOf("asl_ls&")) : location2;
+  location2 = location2.indexOf("p_asid=") > -1 ? location2.slice(0, location2.indexOf("p_asid=")) : location2;
+  location2 = location2.indexOf("asl_") > -1 ? location2.slice(0, location2.indexOf("asl_")) : location2;
+  if (location2.indexOf("?") === -1) {
+    start = "?";
+  }
+  let final = location2 + start + url + "&asl_active=1&asl_force_reset_pagination=1&p_asid=" + $this.o.id + "&p_asl_data=1&" + $this.n("searchsettings").find("form").serialize();
+  final = final.replace("?&", "?");
+  return final;
+};
+/* harmony default export */ var live = ((/* unused pure expression or super */ null && (live_AslPlugin)));
 
 ;// ./src/client/plugin/core/actions/loader.ts
+/* unused harmony import specifier */ var loader_AslPlugin;
 
 
 "use strict";
@@ -216,12 +345,10 @@ external_global_namespaceObject.AslPlugin.prototype.hideLoader = function() {
   });
   $this.n("results").css("display", "");
 };
-/* harmony default export */ var loader = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var loader = ((/* unused pure expression or super */ null && (loader_AslPlugin)));
 
-;// external "DoMini"
-var external_DoMini_namespaceObject = Object(window.WPD)["DoMini"];
-var external_DoMini_default = /*#__PURE__*/__webpack_require__.n(external_DoMini_namespaceObject);
 ;// ./src/client/plugin/core/actions/other.ts
+/* unused harmony import specifier */ var other_AslPlugin;
 
 
 
@@ -242,7 +369,7 @@ external_global_namespaceObject.AslPlugin.prototype.loadASLFonts = function() {
   }
 };
 external_global_namespaceObject.AslPlugin.prototype.updateHref = function() {
-  if (this.o.trigger.update_href && !this.usingLiveLoader) {
+  if (this.o.trigger.update_href && !this.usingLiveLoader()) {
     let url = this.getStateURL() + (this.resultsOpened ? "&asl_s=" : "&asl_ls=") + this.n("text").val();
     history.replaceState("", "", url.replace(location.origin, ""));
   }
@@ -297,9 +424,10 @@ external_global_namespaceObject.AslPlugin.prototype.destroy = function() {
     external_DoMini_default()(h.node).off(h.event, h.handler);
   });
 };
-/* harmony default export */ var other = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var other = ((/* unused pure expression or super */ null && (other_AslPlugin)));
 
 ;// ./src/client/plugin/core/actions/redirect.ts
+/* unused harmony import specifier */ var redirect_AslPlugin;
 
 
 
@@ -343,7 +471,7 @@ external_global_namespaceObject.AslPlugin.prototype.doRedirectToResults = functi
   }
   let url = this.getRedirectURL(ktype);
   if (this.o.overridewpdefault) {
-    if (this.o.resPage.useAjax == 1) {
+    if (this.o.resPage.useAjax) {
       this.hideResults();
       this.liveLoad(this.o.resPage.selector, url);
       this.showLoader();
@@ -405,9 +533,10 @@ external_global_namespaceObject.AslPlugin.prototype.getRedirectURL = function(kt
   final = external_utils_namespaceObject.Hooks.applyFilters("asl/redirect/url", final, this.o.id, this.o.iid);
   return final;
 };
-/* harmony default export */ var redirect = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var redirect = ((/* unused pure expression or super */ null && (redirect_AslPlugin)));
 
 ;// ./src/client/plugin/core/actions/results.ts
+/* unused harmony import specifier */ var results_AslPlugin;
 
 
 
@@ -463,7 +592,7 @@ external_global_namespaceObject.AslPlugin.prototype.showResultsBox = function() 
 external_global_namespaceObject.AslPlugin.prototype.addHighlightString = function($items) {
   let $this = this, phrase = $this.n("text").val().replace(/["']/g, "");
   $items = typeof $items == "undefined" ? $this.n("items").find("a.asl_res_url") : $items;
-  if ($this.o.singleHighlight == 1 && phrase != "" && $items.length > 0) {
+  if ($this.o.singleHighlight && phrase != "" && $items.length > 0) {
     $items.forEach(function(el) {
       try {
         const url = new URL(external_DoMini_default()(el).attr("href"));
@@ -477,7 +606,7 @@ external_global_namespaceObject.AslPlugin.prototype.addHighlightString = functio
 };
 external_global_namespaceObject.AslPlugin.prototype.scrollToResults = function() {
   let $this = this, tolerance = Math.floor(window.innerHeight * 0.1), stop;
-  if (!$this.resultsOpened || $this.o.scrollToResults.enabled != 1 || $this.n("resultsDiv").inViewPort(tolerance)) return;
+  if (!$this.resultsOpened || !$this.o.scrollToResults.enabled || $this.n("resultsDiv").inViewPort(tolerance)) return;
   if ($this.o.resultsposition == "hover") {
     stop = $this.n("probox").offset().top - 20;
   } else {
@@ -490,9 +619,43 @@ external_global_namespaceObject.AslPlugin.prototype.scrollToResults = function()
   stop = stop < 0 ? 0 : stop;
   window.scrollTo({ top: stop, behavior: "smooth" });
 };
-/* harmony default export */ var results = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var results = ((/* unused pure expression or super */ null && (results_AslPlugin)));
+
+;// ./src/client/plugin/core/actions/statistics.ts
+
+
+const statistics_ASL = window.ASL;
+let _timer;
+const _queue = [];
+function registerLiveSearchStatistics(phrase, aspId, deviceType, foundResults, userId = 0, cached = 0) {
+  if (!statistics_ASL.statistics?.enabled || !statistics_ASL.rest_url) return;
+  _queue.push({
+    phrase,
+    page: 1,
+    asp_id: aspId,
+    device_type: deviceType,
+    found_results: foundResults,
+    user_id: userId,
+    suggested: 0,
+    cached
+  });
+  clearTimeout(_timer);
+  _timer = setTimeout(() => {
+    const items = [..._queue];
+    _queue.length = 0;
+    fetch((0,external_utils_namespaceObject.buildRestUrl)(statistics_ASL.rest_url, "ajax-search-lite/statistics/searches/add"), {
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      credentials: "same-origin",
+      body: JSON.stringify(items)
+    }).catch(() => {
+    });
+  }, 1e3);
+}
 
 ;// ./src/client/plugin/core/actions/search.ts
+/* unused harmony import specifier */ var search_AslPlugin;
+
 
 
 
@@ -517,7 +680,8 @@ external_global_namespaceObject.AslPlugin.prototype.searchWithCheck = function(t
 };
 external_global_namespaceObject.AslPlugin.prototype.search = function() {
   let $this = this;
-  if ($this.searching && 0) {}
+  if ($this.searching && 0) // removed by dead control flow
+{}
   if ($this.n("text").val().length < $this.o.charcount) return;
   $this.searching = true;
   $this.n("proloading").css({
@@ -530,7 +694,8 @@ external_global_namespaceObject.AslPlugin.prototype.search = function() {
     action: "ajaxsearchlite_search",
     aslp: $this.n("text").val(),
     asid: $this.o.id,
-    options: $this.n("searchsettings").find("form").serialize()
+    options: $this.n("searchsettings").find("form").serialize(),
+    asl_req_json: 1
   };
   data = external_utils_namespaceObject.Hooks.applyFilters("asl/search/data", data);
   if (JSON.stringify(data) === JSON.stringify($this.lastSearchData)) {
@@ -549,92 +714,139 @@ external_global_namespaceObject.AslPlugin.prototype.search = function() {
   } else if ($this.o.resPage.useAjax) {
     $this.liveLoad($this.o.resPage.selector, $this.getRedirectURL());
   } else {
-    $this.post = external_DoMini_default().fn.ajax({
-      "url": search_ASL.ajaxurl,
-      "method": "POST",
-      "data": data,
-      "success": function(r) {
-        let response = r.replace(/^\s*[\r\n]/gm, "");
-        const cleanResponse = response.match(/___ASLSTART___(.*[\s\S]*)___ASLEND___/);
-        if (cleanResponse === null) {
+    const doAjaxSearch = () => {
+      $this.post = external_DoMini_default().fn.ajax({
+        "url": search_ASL.ajaxurl,
+        "method": "POST",
+        "data": data,
+        "success": function(r) {
+          let htmlContent;
+          try {
+            const jsonResp = JSON.parse(r);
+            htmlContent = jsonResp.html ?? "";
+          } catch (_e) {
+            const cleanResponse = r.replace(/^\s*[\r\n]/gm, "").match(/___ASLSTART___(.*[\s\S]*)___ASLEND___/);
+            if (cleanResponse === null) {
+              $this.hideLoader();
+              console.warn("The response inner data is missing!");
+              return;
+            }
+            htmlContent = cleanResponse[1];
+          }
+          htmlContent = external_utils_namespaceObject.Hooks.applyFilters("asl/search/html", htmlContent);
+          $this.n("resdrg").html("");
+          $this.n("resdrg").html(htmlContent);
+          $this.n("resdrg").find(".asl_keyword").on("click", function() {
+            $this.n("text").val(external_DoMini_default()(this).html());
+            $this.n("container").find("input.orig").val(external_DoMini_default()(this).html()).trigger("keydown");
+            $this.n("container").find("form").trigger("submit", ["ajax"]);
+            $this.search();
+          });
+          $this.nodes.items = $this.n("resultsDiv").find(".item");
+          $this.addHighlightString();
+          $this.gaEvent?.("search_end", { "results_count": $this.n("items").length });
+          if ($this.isRedirectToFirstResult()) {
+            $this.doRedirectToFirstResult();
+            return false;
+          }
           $this.hideLoader();
-          console.warn("The response inner data is missing!");
-          return;
-        }
-        response = cleanResponse[1];
-        response = external_utils_namespaceObject.Hooks.applyFilters("asl/search/html", response);
-        $this.n("resdrg").html("");
-        $this.n("resdrg").html(response);
-        $this.n("resdrg").find(".asl_keyword").on("click", function() {
-          $this.n("text").val(external_DoMini_default()(this).html());
-          $this.n("container").find("input.orig").val(external_DoMini_default()(this).html()).trigger("keydown");
-          $this.n("container").find("form").trigger("submit", ["ajax"]);
-          $this.search();
-        });
-        $this.nodes.items = $this.n("resultsDiv").find(".item");
-        $this.addHighlightString();
-        $this.gaEvent?.("search_end", { "results_count": $this.n("items").length });
-        $this.gaPageview?.($this.n("text").val());
-        if ($this.isRedirectToFirstResult()) {
-          $this.doRedirectToFirstResult();
-          return false;
-        }
-        $this.hideLoader();
-        $this.showResults();
-        $this.scrollToResults();
-        $this.lastSuccesfulSearch = $this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim();
-        $this.lastSearchData = data;
-        $this.updateHref();
-        if ($this.n("items").length == 0) {
-          if ($this.n("showmore") != null) {
-            $this.n("showmore").css("display", "none");
-          }
-        } else {
-          if ($this.n("showmore") != null) {
-            $this.n("showmore").css("display", "block");
-            $this.n("showmore").find("span").off();
-            $this.n("showmore").find("span").on("click", function() {
-              let source = $this.o.trigger.click, url;
-              if (source == "results_page") {
-                url = "?s=" + (0,external_utils_namespaceObject.nicePhrase)($this.n("text").val());
-              } else if (source == "woo_results_page") {
-                url = "?post_type=product&s=" + (0,external_utils_namespaceObject.nicePhrase)($this.n("text").val());
-              } else {
-                url = $this.o.trigger.redirect_url.replace("{phrase}", (0,external_utils_namespaceObject.nicePhrase)($this.n("text").val()));
-              }
-              if ($this.o.overridewpdefault) {
-                if ($this.o.override_method == "post") {
-                  (0,external_utils_namespaceObject.submitToUrl)($this.o.homeurl + url, "post", {
-                    asl_active: 1,
-                    p_asl_data: $this.n("searchsettings").find("form").serialize()
-                  });
+          $this.showResults();
+          $this.scrollToResults();
+          $this.lastSuccesfulSearch = $this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim();
+          $this.lastSearchData = data;
+          $this.updateHref();
+          if ($this.n("items").length == 0) {
+            if ($this.n("showmore") != null) {
+              $this.n("showmore").css("display", "none");
+            }
+          } else {
+            if ($this.n("showmore") != null) {
+              $this.n("showmore").css("display", "block");
+              $this.n("showmore").find("span").off();
+              $this.n("showmore").find("span").on("click", function() {
+                let source = $this.o.trigger.click, url;
+                if (source == "results_page") {
+                  url = "?s=" + (0,external_utils_namespaceObject.nicePhrase)($this.n("text").val());
+                } else if (source == "woo_results_page") {
+                  url = "?post_type=product&s=" + (0,external_utils_namespaceObject.nicePhrase)($this.n("text").val());
                 } else {
-                  location.href = $this.o.homeurl + url + "&asl_active=1&p_asid=" + $this.o.id + "&p_asl_data=1&" + $this.n("searchsettings").find("form").serialize();
+                  url = $this.o.trigger.redirect_url.replace("{phrase}", (0,external_utils_namespaceObject.nicePhrase)($this.n("text").val()));
                 }
-              } else {
-                (0,external_utils_namespaceObject.submitToUrl)($this.o.homeurl + url, "post", {
-                  np_asl_data: $this.n("searchsettings").find("form").serialize()
-                });
-              }
-            });
+                if ($this.o.overridewpdefault) {
+                  if ($this.o.override_method == "post") {
+                    (0,external_utils_namespaceObject.submitToUrl)($this.o.homeurl + url, "post", {
+                      asl_active: 1,
+                      p_asl_data: $this.n("searchsettings").find("form").serialize()
+                    });
+                  } else {
+                    location.href = $this.o.homeurl + url + "&asl_active=1&p_asid=" + $this.o.id + "&p_asl_data=1&" + $this.n("searchsettings").find("form").serialize();
+                  }
+                } else {
+                  (0,external_utils_namespaceObject.submitToUrl)($this.o.homeurl + url, "post", {
+                    np_asl_data: $this.n("searchsettings").find("form").serialize()
+                  });
+                }
+              });
+            }
           }
+          external_utils_namespaceObject.Hooks.applyFilters("asl/search/end", $this, data);
+        },
+        "fail": function(jqXHR) {
+          $this.n("resdrg").html("");
+          $this.n("resdrg").html('<div class="asl_nores">The request failed. Please check your connection! Status: ' + jqXHR.status + "</div>");
+          $this.nodes.items = $this.n("resultsDiv").find(".item");
+          $this.hideLoader();
+          $this.showResults();
+          $this.scrollToResults();
         }
-        external_utils_namespaceObject.Hooks.applyFilters("asl/search/end", $this, data);
-      },
-      "fail": function(jqXHR) {
-        $this.n("resdrg").html("");
-        $this.n("resdrg").html('<div class="asl_nores">The request failed. Please check your connection! Status: ' + jqXHR.status + "</div>");
-        $this.nodes.items = $this.n("resultsDiv").find(".item");
-        $this.hideLoader();
-        $this.showResults();
-        $this.scrollToResults();
+      });
+    };
+    if (window.ASL.cache.enabled && window.ASL.cache.type === "super_file") {
+      const _opts = (0,external_utils_namespaceObject.parse_str)(data.options);
+      const _hash = (0,external_utils_namespaceObject.md5)(0 + $this.n("text").val() + JSON.stringify(_opts) + "0").slice(0, 14);
+      if (window.ASL.cache.list.has(_hash)) {
+        fetch(window.ASL.cache.url + _hash + ".json?t=" + search_ASL.cache.timestamp).then((response) => {
+          if (!response.ok) throw new Error("Cache response not ok");
+          return response.json();
+        }).then((resp) => {
+          const htmlContent = external_utils_namespaceObject.Hooks.applyFilters("asl/search/html", resp.html ?? "");
+          $this.n("resdrg").html("");
+          $this.n("resdrg").html(htmlContent);
+          $this.nodes.items = $this.n("resultsDiv").find(".item");
+          $this.addHighlightString();
+          $this.gaEvent?.("search_end", { "results_count": $this.n("items").length });
+          registerLiveSearchStatistics(
+            $this.n("text").val(),
+            $this.o.id,
+            $this.n("searchsettings").find("input[name=device]").val() || "desktop",
+            resp.full_results_count ?? 0,
+            search_ASL.statistics?.uid ?? 0,
+            1
+          );
+          if ($this.isRedirectToFirstResult()) {
+            $this.doRedirectToFirstResult();
+            return;
+          }
+          $this.hideLoader();
+          $this.showResults();
+          $this.scrollToResults();
+          $this.lastSuccesfulSearch = $this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim();
+          $this.lastSearchData = data;
+          $this.updateHref();
+        }).catch(() => {
+          window.ASL.initCache(true);
+          doAjaxSearch();
+        });
+        return;
       }
-    });
+    }
+    doAjaxSearch();
   }
 };
-/* harmony default export */ var search = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var search = ((/* unused pure expression or super */ null && (search_AslPlugin)));
 
 ;// ./src/client/plugin/core/etc/api.ts
+/* unused harmony import specifier */ var api_AslPlugin;
 
 
 external_global_namespaceObject.AslPlugin.prototype.searchFor = function(phrase) {
@@ -686,9 +898,10 @@ external_global_namespaceObject.AslPlugin.prototype.filtersInitial = function() 
 external_global_namespaceObject.AslPlugin.prototype.filtersChanged = function() {
   return this.n("searchsettings").find("input[name=filters_changed]").val() == 1;
 };
-/* harmony default export */ var api = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var api = ((/* unused pure expression or super */ null && (api_AslPlugin)));
 
 ;// ./src/client/plugin/core/etc/position.ts
+/* unused harmony import specifier */ var position_AslPlugin;
 
 
 
@@ -813,9 +1026,10 @@ external_global_namespaceObject.AslPlugin.prototype.hideOnInvisibleBox = functio
     $this.hideResults();
   }
 };
-/* harmony default export */ var position = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var position = ((/* unused pure expression or super */ null && (position_AslPlugin)));
 
 ;// ./src/client/plugin/core/events/button.ts
+/* unused harmony import specifier */ var button_AslPlugin;
 
 
 external_global_namespaceObject.AslPlugin.prototype.initMagnifierEvents = function() {
@@ -836,7 +1050,7 @@ external_global_namespaceObject.AslPlugin.prototype.initMagnifierEvents = functi
     clearTimeout($this.timeouts.search);
     $this.n("proloading").css("display", "none");
     $this.timeouts.search = setTimeout(function() {
-      if ($this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim() != $this.lastSuccesfulSearch || !$this.resultsOpened && !$this.usingLiveLoader) {
+      if ($this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim() != $this.lastSuccesfulSearch || !$this.resultsOpened && !$this.usingLiveLoader()) {
         $this.search();
       } else {
         if ($this.isRedirectToFirstResult())
@@ -847,7 +1061,7 @@ external_global_namespaceObject.AslPlugin.prototype.initMagnifierEvents = functi
     }, $this.o.trigger.delay);
   });
 };
-/* harmony default export */ var events_button = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var events_button = ((/* unused pure expression or super */ null && (button_AslPlugin)));
 
 ;// ./src/client/plugin/core/events/input.ts
 
@@ -879,7 +1093,7 @@ external_global_namespaceObject.AslPlugin.prototype._initFocusInput = function()
     external_DoMini_default()(this).trigger("focus", []);
     $this.gaEvent?.("focus");
     if ($this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim() == $this.lastSuccesfulSearch) {
-      if (!$this.resultsOpened && !$this.usingLiveLoader) {
+      if (!$this.resultsOpened && !$this.usingLiveLoader()) {
         $this.showResults();
       }
       return false;
@@ -915,7 +1129,7 @@ external_global_namespaceObject.AslPlugin.prototype._initSearchInput = function(
     clearTimeout($this.timeouts.search);
     $this.n("proloading").css("display", "none");
     $this.timeouts.search = setTimeout(function() {
-      if ($this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim() != $this.lastSuccesfulSearch || !$this.resultsOpened && !$this.usingLiveLoader) {
+      if ($this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim() != $this.lastSuccesfulSearch || !$this.resultsOpened && !$this.usingLiveLoader()) {
         $this.search();
       } else {
         if ($this.isRedirectToFirstResult())
@@ -952,7 +1166,7 @@ external_global_namespaceObject.AslPlugin.prototype._initEnterEvent = function()
           $this.search();
         }
       } else if ($this.o.trigger.return == "ajax_search") {
-        if ($this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim() != $this.lastSuccesfulSearch || !$this.resultsOpened && !$this.usingLiveLoader) {
+        if ($this.n("searchsettings").find("form").serialize() + $this.n("text").val().trim() != $this.lastSuccesfulSearch || !$this.resultsOpened && !$this.usingLiveLoader()) {
           $this.search();
         }
       }
@@ -1144,6 +1358,7 @@ external_global_namespaceObject.AslPlugin.prototype.scrolling = function(ignoreV
 };
 
 ;// ./src/client/plugin/core/events/results.ts
+/* unused harmony import specifier */ var events_results_AslPlugin;
 
 
 
@@ -1157,7 +1372,7 @@ external_global_namespaceObject.AslPlugin.prototype.initResultsEvents = function
     if (external_DoMini_default()(e.target).closest(".asl_w").length == 0) {
       $this.hideOnInvisibleBox();
       if (ktype != "click" || ktype != "touchend" || keycode != 3) {
-        if (!$this.resultsOpened || $this.o.closeOnDocClick != 1) return;
+        if (!$this.resultsOpened || !$this.o.closeOnDocClick) return;
         if (!$this.dragging) {
           $this.hideLoader();
           $this.searchAbort();
@@ -1179,9 +1394,10 @@ external_global_namespaceObject.AslPlugin.prototype.initResultsEvents = function
     });
   });
 };
-/* harmony default export */ var events_results = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var events_results = ((/* unused pure expression or super */ null && (events_results_AslPlugin)));
 
 ;// ./src/client/plugin/core/events/touch.ts
+/* unused harmony import specifier */ var touch_AslPlugin;
 
 
 
@@ -1194,9 +1410,10 @@ external_global_namespaceObject.AslPlugin.prototype.monitorTouchMove = function(
     $this.dragging = false;
   });
 };
-/* harmony default export */ var touch = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var touch = ((/* unused pure expression or super */ null && (touch_AslPlugin)));
 
 ;// ./src/client/plugin/core/init/init.ts
+/* unused harmony import specifier */ var init_AslPlugin;
 
 
 
@@ -1207,8 +1424,7 @@ external_global_namespaceObject.AslPlugin.prototype.init = function(options, ele
   this.initNodeVariables();
   this.o.redirectOnClick = this.o.trigger.click != "ajax_search" && this.o.trigger.click != "nothing";
   this.o.redirectOnEnter = this.o.trigger.return != "ajax_search" && this.o.trigger.return != "nothing";
-  this.usingLiveLoader = this.o.resPage.useAjax && external_DoMini_default()(this.o.resPage.selector).length > 0 || external_DoMini_default()(".asl_es_" + this.o.id).length > 0;
-  if (this.usingLiveLoader) {
+  if (this.usingLiveLoader()) {
     this.o.trigger.type = this.o.resPage.trigger_type;
     this.o.trigger.facet = this.o.resPage.trigger_facet;
     if (this.o.resPage.trigger_magnifier) {
@@ -1310,9 +1526,10 @@ external_global_namespaceObject.AslPlugin.prototype.initEvents = function() {
   this.initMagnifierEvents();
   this.initInputEvents();
 };
-/* harmony default export */ var init = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var init = ((/* unused pure expression or super */ null && (init_AslPlugin)));
 
 ;// ./src/client/plugin/core/init/results.ts
+/* unused harmony import specifier */ var init_results_AslPlugin;
 
 
 
@@ -1368,9 +1585,10 @@ external_global_namespaceObject.AslPlugin.prototype.initResultsAnimations = func
     "animation-duration": this.resAnim.duration + "ms"
   });
 };
-/* harmony default export */ var init_results = ((/* unused pure expression or super */ null && (AslPlugin)));
+/* harmony default export */ var init_results = ((/* unused pure expression or super */ null && (init_results_AslPlugin)));
 
 ;// ./src/client/bundle/optimized/core.ts
+
 
 
 

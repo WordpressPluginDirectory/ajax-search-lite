@@ -2,8 +2,17 @@
 
 namespace WPDRMS\ASL\Core;
 
+if ( !defined('ABSPATH') ) {
+	die("You can't access this file directly.");
+}
+
+use WPDRMS\ASL\Analytics\AnalyticsRoute;
 use WPDRMS\ASL\BlockEditor\ASLBlock;
-use WPDRMS\ASL\Patterns\SingletonTrait;
+use WPDRMS\ASL\Cache\CacheRoute;
+use WPDRMS\ASL\Compatibility\CompatibilityRoute;
+use WPDRMS\ASL\Maintenance\MaintenanceRoute;
+use WPDRMS\ASL\Statistics\StatisticsRoute;
+use WPDRMS\PluginCore\Traits\SingletonTrait;
 use WPDRMS\ASL\Options\Routes\SearchOptionsRoute;
 use WPDRMS\ASL\Options\Routes\TaxonomyTermsRoute;
 
@@ -19,6 +28,11 @@ class Factory {
 		'Rest'  => array(
 			TaxonomyTermsRoute::class,
 			SearchOptionsRoute::class,
+			StatisticsRoute::class,
+			CacheRoute::class,
+			AnalyticsRoute::class,
+			CompatibilityRoute::class,
+			MaintenanceRoute::class,
 		),
 		'Block' => array(
 			ASLBlock::class,
